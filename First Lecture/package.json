@@ -10,6 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "openai": "^6.45.0",
     "tiktoken": "^1.0.22"
   }
 }
