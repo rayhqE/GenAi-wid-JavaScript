@@ -10,3 +10,7 @@ Output Samples: Before nd after giving examples...
 ![alt text](image-1.png)
 ![alt text](image-2.png)
 ![alt text](image-3.png)
+
+4.Role Play Prompting
+You assign a persona to the agent.
+![alt text](image-4.png)
