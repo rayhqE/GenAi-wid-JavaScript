@@ -1,0 +1,1 @@
+'Weather Report:\nPatna: Mist +30�C\nDelhi: Partly Cloudy +35�C\nGoa: Patchy rain nearby +26�C' 

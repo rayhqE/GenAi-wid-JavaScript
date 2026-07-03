@@ -9,3 +9,4 @@ Output Samples: Before nd after giving examples...
 3.Chain of Thought Prompting- Instruction: hey Model have some breakdown of problem and then solve it before giving final output.
 ![alt text](image-1.png)
 ![alt text](image-2.png)
+![alt text](image-3.png)

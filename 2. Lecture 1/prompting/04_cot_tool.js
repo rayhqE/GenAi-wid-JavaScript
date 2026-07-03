@@ -1,13 +1,26 @@
 //Chain of Thought Prompting-
 import "dotenv/config";
 import { OpenAI } from "openai";
+import axios from "axios";
+import { exec } from "child_process";
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 async function getWeatherData(cityName) {
-  return `The weather of ${cityName} is 40 degree Celcius`;
+  const url = `https://wttr.in/${cityName.toLowerCase()}?format=%C+%t`;
+  const response = await axios.get(url, { responseType: "text" });
+  return JSON.stringify({ cityName, weatherInfo: response.data });
+}
+
+async function executeCommandOnCli(cmd) {
+  return new Promise((res, rej) => {
+    exec(cmd, (err, out) => {
+      if (err) return res(`There was an Error ${err}`);
+      else return res(out);
+    });
+  });
 }
 
 const SYSTEM_PROMPT = `
@@ -27,6 +40,8 @@ const SYSTEM_PROMPT = `
 
   Availabel Tools:
   - "getWeatherData": getWeatherData(cityName:string): Returns the realtime weather information of city
+  - "executeCommandOnCli": executeCommandOnCli(command: string): Executes the command on user's device and returns output from stdout.
+
 
   Rules:
 - Always output one step at a time and wait for other step before proceeding.
@@ -55,7 +70,7 @@ OUTPUT:
 - "TOOL_REQUEST": { "functionName": "getWeatherData", "input": "goa" }
 - "TOOL_OUTPUT": The weather of Goa is sunny with some 30 degree c.
 - "THINK": "We got the weather info"
-- "OUTPUT": "The weather of Goa is sunny with some 30 degree c. Its goona be Hotttttt"
+- "OUTPUT": "The weather of Goa is sunny with some 30 degree c. Its gonna be Hotttttt"
 
 
   Output Format :
@@ -82,12 +97,24 @@ async function main(prompt = "") {
     if (parsedResult.step.toLowerCase() === "output") break;
     if (parsedResult.step.toUpperCase() === "TOOL_REQUEST") {
       const { functionName, input } = parsedResult;
+
       switch (functionName) {
+        case "executeCommandOnCli": {
+          const toolResult = await executeCommandOnCli(input);
+          console.log(`🛠️(${functionName}):${input}`, toolResult);
+          MESSAGES_DB.push({
+            role: "developer",
+            content: JSON.stringify({
+              step: "TOOL_OUTPUT",
+              output: toolResult,
+            }),
+          });
+          continue;
+        }
         case "getWeatherData":
           {
             const toolResult = await getWeatherData(input);
             console.log(`🛠️(${functionName}):${input}`, toolResult);
-
             MESSAGES_DB.push({
               role: "developer",
               content: JSON.stringify({
@@ -103,4 +130,6 @@ async function main(prompt = "") {
   }
 }
 
-main("What is the Weather of Patna");
+main(
+  "What is the Weather of Patna,Delhi,Goa and then write the output to a beautifull webpage,create a new folder saying weather and create all html css file there and then run this on my browser",
+);
